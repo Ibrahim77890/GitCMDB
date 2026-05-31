@@ -9,3 +9,5 @@
 *.cast
 
 data/prod/us-east-1
+
+!README.md
