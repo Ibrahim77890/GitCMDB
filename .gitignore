@@ -1,0 +1,7 @@
+# Ignore temporary files and locks
+*.tmp
+*.lock
+
+# Ignore test outputs
+/tests/output/
+
