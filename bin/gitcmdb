@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Simple CLI delegator for GitCMDB
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+LIBDIR="$ROOT_DIR/lib"
+
+source "$LIBDIR/common.sh" || exit 1
+source "$LIBDIR/store.sh" || exit 1
+source "$LIBDIR/query.sh" || exit 1
+source "$LIBDIR/txn.sh" || exit 1
+source "$LIBDIR/validate.sh" || exit 1
+
+cmd=${1:-}
+shift || true
+
+case "$cmd" in
+  init)
+    install_init "$ROOT_DIR" "$@"
+    ;;
+  add)
+    # add host --file file.json
+    type=${1:-}
+    shift || true
+    if [[ "$type" == "host" ]]; then
+      file=""
+      while [[ $# -gt 0 ]]; do
+        case "$1" in
+          --file) file="$2"; shift 2;;
+          *) shift;;
+        esac
+      done
+      if [[ -z "$file" ]]; then
+        die "--file is required"
+      fi
+      store_add_host_from_file "$file"
+    else
+      die "unsupported add type: $type"
+    fi
+    ;;
+  get)
+    type=${1:-}
+    id=${2:-}
+    if [[ "$type" == "host" && -n "$id" ]]; then
+      store_get_host "$id"
+    else
+      die "usage: gitcmdb get host <hostname>"
+    fi
+    ;;
+  update)
+    type=${1:-}
+    id=${2:-}
+    shift 2 || true
+    if [[ "$type" == "host" && -n "$id" ]]; then
+      # simple --set key=value
+      while [[ $# -gt 0 ]]; do
+        case "$1" in
+          --set)
+            kv="$2"; shift 2;
+            store_update_host_set "$id" "$kv"
+            ;;
+          *) shift;;
+        esac
+      done
+    else
+      die "usage: gitcmdb update host <hostname> --set key=value"
+    fi
+    ;;
+  query)
+    sub=${1:-}
+    shift || true
+    if [[ "$sub" == "hosts" ]]; then
+      query_hosts "$@"
+    else
+      die "unsupported query"
+    fi
+    ;;
+  history)
+    type=${1:-}
+    id=${2:-}
+    if [[ "$type" == "host" && -n "$id" ]]; then
+      txn_show_history "$id"
+    else
+      die "usage: gitcmdb history host <hostname>"
+    fi
+    ;;
+  validate)
+    lib_validate_all
+    ;;
+  *)
+    cat <<EOF
+Usage: gitcmdb <command> [args]
+Commands:
+  init
+  add host --file <file.json>
+  get host <hostname>
+  update host <hostname> --set key=value
+  query hosts [--env ENV]
+  history host <hostname>
+  validate
+EOF
+    exit 1
+    ;;
+esac

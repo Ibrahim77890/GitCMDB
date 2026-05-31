@@ -5,3 +5,7 @@
 # Ignore test outputs
 /tests/output/
 
+*.md
+*.cast
+
+data/prod/us-east-1
