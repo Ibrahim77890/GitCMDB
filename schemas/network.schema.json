@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "NetworkSchema",
+  "description": "Defines software-defined or physical networking configuration boundaries.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "network_name": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]+$"
+    },
+    "cidr": {
+      "type": "string",
+      "pattern": "^^([0-9]{1,3}\\.){3}[0-9]{1,3}\\/[0-9]{1,2}$"
+    },
+    "vlan_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4094
+    },
+    "gateway": {
+      "type": "string",
+      "format": "ipv4"
+    }
+  },
+  "required": ["network_name", "cidr", "vlan_id", "gateway"]
+}

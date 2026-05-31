@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Host",
+  "type": "object",
+  "properties": {
+    "hostname": { "type": "string", "pattern": "^[a-zA-Z0-9.-]+$" },
+    "environment": { "type": "string", "enum": ["prod", "staging", "dev"] },
+    "region": { "type": "string" },
+    "role": { "type": "string" },
+    "ip_address": { "type": "string", "format": "ipv4" },
+    "status": { "type": "string", "enum": ["active", "provisioning", "decommissioned", "vulnerable"] },
+    "kernel": { "type": "string" },
+    "owner": { "type": "string" },
+    "tags": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["hostname", "environment", "region", "ip_address", "status"]
+}
