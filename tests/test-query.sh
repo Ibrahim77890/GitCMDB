@@ -16,7 +16,8 @@ fi
 
 # Run a query with diagnostic output on failure
 echo "[*] Executing query test..."
-if ! bash "$ROOT/bin/gitcmdb.sh" query hosts --env prod --status active 2>&1 | grep -q .; then
+query_output="$(bash "$ROOT/bin/gitcmdb.sh" query hosts --env prod --status active --raw 2> /dev/null || true)"
+if [[ -z "$query_output" ]]; then
   echo "[ERROR] Query produced no output"
   echo "[DEBUG] Attempting diagnostic query..."
   GITCMDB_ROOT="$ROOT" bash "$ROOT/lib/query.sh" hosts --env prod 2>&1 || true
