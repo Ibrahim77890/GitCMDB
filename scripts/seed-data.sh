@@ -17,10 +17,10 @@ for i in $(seq 1 "$COUNT"); do
   statuses=(active provisioning maintenance vulnerable)
   role=${roles[$((rand % ${#roles[@]}))]}
   status=${statuses[$((rand % ${#statuses[@]}))]}
-  ip="10.10.$((rand % 250)).$(((rand/7) % 250))"
-  kernel="5.$((rand % 10)).$(((rand/13) % 10))"
+  ip="10.10.$((rand % 250)).$(((rand / 7) % 250))"
+  kernel="5.$((rand % 10)).$(((rand / 13) % 10))"
   owner="owner$((rand % 10 + 1))@example.com"
-  cat > "$TARGET_DIR/${id}.json" <<EOF
+  cat > "$TARGET_DIR/${id}.json" << EOF
 {
   "hostname": "$id",
   "environment": "prod",

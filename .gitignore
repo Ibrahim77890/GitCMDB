@@ -4,10 +4,16 @@
 
 # Ignore test outputs
 /tests/output/
-
 *.md
+
 *.cast
+
+
+# Release artifacts
+dist/
 
 data/prod/us-east-1
 
 !README.md
+!index.md
+

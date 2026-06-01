@@ -1,5 +1,10 @@
 # GitCMDB — Git-backed Configuration Management Database
 
+[![CI](https://github.com/Ibrahim77890/GitCMDB/actions/workflows/ci.yml/badge.svg)](https://github.com/Ibrahim77890/GitCMDB/actions/workflows/ci.yml)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Ibrahim77890/GitCMDB)
+
+![GitCMDB demo](docs/images/demo.svg)
+
 GitCMDB is a lightweight, filesystem-first CMDB implemented in Bash. It stores infrastructure assets (hosts, services, networks, compliance records) as JSON documents organized by environment and region. Every write is atomic, validated, and recorded in Git so the system provides an auditable, reproducible state journal without a separate database server.
 
 Why this project matters
@@ -45,6 +50,13 @@ Run the included smoke tests:
 ./tests/test-install.sh
 ./tests/test-write.sh
 ./tests/test-query.sh
+```
+
+Install from release
+
+```bash
+curl -sSL https://github.com/Ibrahim77890/GitCMDB/releases/latest/download/gitcmdb-linux-amd64.tar.gz | tar -xz -C /usr/local/
+sudo ln -sf /usr/local/gitcmdb/bin/gitcmdb /usr/local/bin/gitcmdb
 ```
 
 Demo (images)

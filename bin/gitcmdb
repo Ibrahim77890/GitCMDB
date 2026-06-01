@@ -5,10 +5,15 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 LIBDIR="$ROOT_DIR/lib"
 
+# shellcheck source=lib/common.sh
 source "$LIBDIR/common.sh" || exit 1
+# shellcheck source=lib/store.sh
 source "$LIBDIR/store.sh" || exit 1
+# shellcheck source=lib/query.sh
 source "$LIBDIR/query.sh" || exit 1
+# shellcheck source=lib/txn.sh
 source "$LIBDIR/txn.sh" || exit 1
+# shellcheck source=lib/validate.sh
 source "$LIBDIR/validate.sh" || exit 1
 
 cmd=${1:-}
@@ -26,8 +31,11 @@ case "$cmd" in
       file=""
       while [[ $# -gt 0 ]]; do
         case "$1" in
-          --file) file="$2"; shift 2;;
-          *) shift;;
+          --file)
+            file="$2"
+            shift 2
+            ;;
+          *) shift ;;
         esac
       done
       if [[ -z "$file" ]]; then
@@ -56,10 +64,11 @@ case "$cmd" in
       while [[ $# -gt 0 ]]; do
         case "$1" in
           --set)
-            kv="$2"; shift 2;
+            kv="$2"
+            shift 2
             store_update_host_set "$id" "$kv"
             ;;
-          *) shift;;
+          *) shift ;;
         esac
       done
     else
@@ -88,7 +97,7 @@ case "$cmd" in
     lib_validate_all
     ;;
   *)
-    cat <<EOF
+    cat << 'EOF'
 Usage: gitcmdb <command> [args]
 Commands:
   init

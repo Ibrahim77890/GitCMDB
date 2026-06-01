@@ -11,24 +11,26 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # Resolve root directory relative to script position for portability
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly GITCMDB_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_DIR
+GITCMDB_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+readonly GITCMDB_ROOT
 
 # Source common utilities for unified logging
 if [[ -f "${GITCMDB_ROOT}/lib/common.sh" ]]; then
-    source "${GITCMDB_ROOT}/lib/common.sh"
+  source "${GITCMDB_ROOT}/lib/common.sh"
 else
-    # Fallback inline logging if lib/common.sh isn't built yet
-    log_info() { echo -e "\033[0;34m[INFO]\033[0m $*"; }
-    log_success() { echo -e "\033[0;32m[SUCCESS]\033[0m $*"; }
-    log_error() { echo -e "\033[0;31m[ERROR]\033[0m $*" >&2; }
+  # Fallback inline logging if lib/common.sh isn't built yet
+  log_info() { echo -e "\033[0;34m[INFO]\033[0m $*"; }
+  log_success() { echo -e "\033[0;32m[SUCCESS]\033[0m $*"; }
+  log_error() { echo -e "\033[0;31m[ERROR]\033[0m $*" >&2; }
 fi
 
 seed_base_schemas() {
-    log_info "Writing core object JSON structural schemas..."
-    
-    # Generate host schema contract
-    cat << 'EOF' > "${GITCMDB_ROOT}/schemas/host.schema.json"
+  log_info "Writing core object JSON structural schemas..."
+
+  # Generate host schema contract
+  cat << 'EOF' > "${GITCMDB_ROOT}/schemas/host.schema.json"
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Host",
@@ -48,8 +50,8 @@ seed_base_schemas() {
 }
 EOF
 
-    # Generate basic service schema contract
-    cat << 'EOF' > "${GITCMDB_ROOT}/schemas/service.schema.json"
+  # Generate basic service schema contract
+  cat << 'EOF' > "${GITCMDB_ROOT}/schemas/service.schema.json"
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Service",
@@ -65,35 +67,35 @@ EOF
 }
 EOF
 
-    chmod 644 "${GITCMDB_ROOT}/schemas/"*.json
-    log_success "Database schemas written to disk."
+  chmod 644 "${GITCMDB_ROOT}/schemas/"*.json
+  log_success "Database schemas written to disk."
 }
 
 sync_git_ledger() {
-    log_info "Synchronizing tracking ledger..."
-    if [[ -d "${GITCMDB_ROOT}/.git" ]]; then
-        pushd "${GITCMDB_ROOT}" &> /dev/null
-        git add schemas/*.json
-        if ! git diff-index --quiet HEAD --; then
-            git commit -m "add(schemas): baseline system validation definitions"
-            log_success "Ledger updated with initialization schemas."
-        else
-            log_info "Ledger is already up to date."
-        fi
-        popd &> /dev/null
+  log_info "Synchronizing tracking ledger..."
+  if [[ -d "${GITCMDB_ROOT}/.git" ]]; then
+    pushd "${GITCMDB_ROOT}" &> /dev/null
+    git add schemas/*.json
+    if ! git diff-index --quiet HEAD --; then
+      git commit -m "add(schemas): baseline system validation definitions"
+      log_success "Ledger updated with initialization schemas."
+    else
+      log_info "Ledger is already up to date."
     fi
+    popd &> /dev/null
+  fi
 }
 
 main() {
-    log_info "Beginning GitCMDB initialization sequence..."
-    
-    # Ensure system directories are sound
-    mkdir -p "${GITCMDB_ROOT}"/{bin,lib,schemas,data,docs,scripts,tests}
-    
-    seed_base_schemas
-    sync_git_ledger
-    
-    log_success "Workspace initialization successfully verified."
+  log_info "Beginning GitCMDB initialization sequence..."
+
+  # Ensure system directories are sound
+  mkdir -p "${GITCMDB_ROOT}"/{bin,lib,schemas,data,docs,scripts,tests}
+
+  seed_base_schemas
+  sync_git_ledger
+
+  log_success "Workspace initialization successfully verified."
 }
 
 main "$@"

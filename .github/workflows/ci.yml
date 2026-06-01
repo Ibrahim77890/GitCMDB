@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck jq ripgrep
+
+      - name: Install shfmt
+        run: |
+          go install mvdan.cc/sh/v3/cmd/shfmt@v3.8.0
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Check formatting
+        run: |
+          shfmt -d -i 2 -ci -sr .
+
+      - name: ShellCheck
+        run: |
+          set -euo pipefail
+          mapfile -d '' files < <(find bin lib scripts tests -type f -print0)
+          files+=("install.sh")
+          shellcheck "${files[@]}"
+
+      - name: Run tests
+        env:
+          GITCMDB_ROOT: ${{ github.workspace }}
+        run: |
+          chmod +x bin/* lib/*.sh scripts/*.sh tests/*.sh install.sh
+          ./tests/test-install.sh
+          ./tests/test-write.sh
+          ./tests/test-query.sh

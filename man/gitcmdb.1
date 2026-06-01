@@ -1,8 +1,81 @@
-.TH gitcmdb 1 "$(date +%Y-%m-%d)" "GitCMDB" "User Commands"
+.TH gitcmdb 1 "2026-06-01" "GitCMDB" "User Commands"
 .SH NAME
 gitcmdb \- Git-backed configuration management database CLI
 .SH SYNOPSIS
 .B gitcmdb
-.RI " [" command "]"
+.RI " <command> "
+.RI " [options]"
 .SH DESCRIPTION
-GitCMDB provides a set of shell utilities to manage infrastructure state stored as JSON documents and versioned by Git.
+GitCMDB manages infrastructure state as JSON documents stored in a filesystem tree and versioned by Git. Each write is validated, applied atomically, and recorded as a commit for auditability.
+.SH COMMANDS
+.TP
+.B init
+Initialize the GitCMDB workspace and schema layout.
+.TP
+.B add host --file <file.json>
+Create a host record from a JSON file.
+.TP
+.B get host <hostname>
+Read a host record by hostname.
+.TP
+.B update host <hostname> --set key=value
+Update a host record field.
+.TP
+.B query hosts [--env <env>] [--status <status>]
+Run a query against host records.
+.TP
+.B history host <hostname>
+Show the Git history for a host record.
+.TP
+.B validate
+Validate all data files against JSON schemas.
+.SH OPTIONS
+.TP
+.B -h, --help
+Show help for the top-level CLI.
+.SH ENVIRONMENT
+.TP
+.B GITCMDB_ROOT
+Root directory for the GitCMDB workspace. Defaults to the repository root when running from source.
+.SH FILES
+.TP
+.I data/<env>/<region>/<type>/
+Data storage location for CMDB records.
+.TP
+.I schemas/
+JSON Schema definitions for validation.
+.TP
+.I man/gitcmdb.1
+This manual page.
+.SH EXIT STATUS
+.TP
+.B 0
+Success.
+.TP
+.B 1
+Failure or invalid usage.
+.SH EXAMPLES
+.TP
+Initialize a workspace:
+.RS
+.nf
+gitcmdb init
+.fi
+.RE
+.TP
+Add a host record:
+.RS
+.nf
+gitcmdb add host --file data/prod/us-east-1/hosts/srv-001.json
+.fi
+.RE
+.TP
+Query active hosts:
+.RS
+.nf
+gitcmdb query hosts --env prod --status active
+.fi
+.RE
+.SH SEE ALSO
+.BR git (1),
+.BR jq (1)
