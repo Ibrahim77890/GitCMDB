@@ -3,11 +3,12 @@
 [![CI](https://github.com/Ibrahim77890/GitCMDB/actions/workflows/ci.yml/badge.svg)](https://github.com/Ibrahim77890/GitCMDB/actions/workflows/ci.yml)
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Ibrahim77890/GitCMDB)
 
-![GitCMDB demo](docs/images/demo.svg)
 
 GitCMDB is a lightweight, filesystem-first CMDB implemented in Bash. It stores infrastructure assets (hosts, services, networks, compliance records) as JSON documents organized by environment and region. Every write is atomic, validated, and recorded in Git so the system provides an auditable, reproducible state journal without a separate database server.
 
 Why this project matters
+The point of the project is not to imitate PostgreSQL or SQLite. The point is to build a production-style system that solves a real DevOps problem: tracking infrastructure state in a way that is auditable, reproducible, searchable, and easy to operate from the command line.
+
 - Demonstrates practical DevOps engineering with core Linux tooling: Bash, git, jq, ripgrep, awk.
 - Shows safe shell engineering: `set -euo pipefail`, atomic writes, `flock`-based locking, schema validation.
 - Uses Git as a replication/audit layer and supports time-travel (restore by commit).
@@ -19,6 +20,26 @@ Key features
 - High-performance read queries using `rg` + `jq` + `awk` pipelines.
 - Git-backed transaction journal (one commit per write).
 - Simple CLI: `bin/gitcmdb.sh` (init, add, update, get, query, history, validate).
+
+## Architecture Overview
+
+GitCMDB uses a filesystem-first design instead of a single flat file. Each object is stored as a separate document so you can search, diff, validate, and version it independently.
+
+```text
+gitcmdb/
+├── bin/
+├── lib/
+├── data/
+│   └── prod/
+│       └── us-east-1/
+│           ├── hosts/
+│           ├── networks/
+│           └── services/
+├── schemas/
+├── docs/
+├── tests/
+└── scripts/
+```
 
 Quick start (local or cloud VM)
 1. Ensure dependencies are installed: `git`, `bash` (>=4), `jq`, `ripgrep` (`rg`), `awk`, `sed`.
@@ -59,47 +80,34 @@ curl -sSL https://github.com/Ibrahim77890/GitCMDB/releases/latest/download/gitcm
 sudo ln -sf /usr/local/gitcmdb/bin/gitcmdb /usr/local/bin/gitcmdb
 ```
 
-Demo (images)
-If you are preparing a visual demo (pictures instead of video), place screenshots in `docs/images/` with descriptive names. Example images and the recommended scenes:
+## Operational Demo
 
-- `docs/images/scene1-seed.png` — Seed output (show generated files)
-- `docs/images/scene2-query.png` — Query output (table of active hosts)
-- `docs/images/scene3-add.png` — Add host command & resulting file
-- `docs/images/scene4-update.png` — Update command & commit message
-- `docs/images/scene5-history.png` — Git history (`git log --patch`) showing the change
-- `docs/images/scene6-benchmark.png` — Benchmark timings and `report.md`
+### 1. Cloud-Native Execution Environment
+The point of the project is not to imitate PostgreSQL or SQLite. The point is to build a production-style system that solves a real DevOps problem. Instead of presenting a local toy script, GitCMDB executes directly on a remote cloud Linux server. Let's verify our hosting environment.
 
-Embed images in your demo README or slide deck like this:
+![gitcmdb-01.png](docs/images/gitcmdb-01.png)
 
-```markdown
-![Seed output](docs/images/scene1-seed.png)
-![Query output](docs/images/scene2-query.png)
-```
+### 2. Filesystem as a Relational Database
+The storage framework treats the Linux file system layout as its relational database. Each object is stored as a separate document so you can search, diff, validate, and version it independently. Let's look at the codebase layout.
 
-Notes for a cloud demo (GCP VM)
-- Use an Ubuntu LTS Compute Engine `e2-micro` (free-tier eligible) and follow the same Quick start steps on the VM.
-- Ensure Git user identity is configured before `gitcmdb-init.sh` runs, e.g.: 
+![gitcmdb-02.png](docs/images/gitcmdb-02.png)
 
-```bash
-git config --global user.email "you@example.com"
-git config --global user.name "Your Name"
-```
+### 3. Initialization and Deterministic Seeding
+We will export our environment root variable, invoke our initialization binary to deploy the structural directories, and seed 100 deterministic JSON records to simulate a data tier.
 
-Troubleshooting
-- If you see `command not found` errors, install the missing package (`jq`, `rg`) with your distro package manager.
-- If CLI scripts complain about `readonly variable` when sourcing libs, run commands under `bash` (not `sh`) and ensure `GITCMDB_ROOT` is exported: `export GITCMDB_ROOT="$PWD"`.
-- If Git commits fail with unknown author, configure git user.name/user.email before the first commit.
+![gitcmdb-03.png](docs/images/gitcmdb-03.png)
 
-Where to look next
-- `index.md` — full project blueprint and roadmap
-- `demo-guide.md` — step-by-step demo instructions and recording tips
-- `gcp-testing-guide.md` — instructions to deploy and demo on a GCP VM
+### 4. Zero-Allocation Query Pipelines
+Instead of maintaining a heavy database engine, we process read workloads using zero-allocation pipelines (`rg` + `jq` + `awk`). Let's query production hosts that are currently active. This ensures operators can query and validate state quickly from Bash.
 
-Contact
-If you want, I can prepare a single `deploy-on-gcp.sh` helper to provision a VM, install dependencies, clone the repo, and bootstrap the demo automatically.
+![gitcmdb-04.png](docs/images/gitcmdb-04.png)
 
-Licensing
-This repository has no explicit license file. Add a LICENSE if you want to publish the project publicly.
+### 5. ACID-Like Atomic Write Path
+Let's add a new asset record. The engine processes writes through a strict write path: input validation, file locking via `flock` to prevent race conditions, writing to a temp space, schema contract matching, and an atomic POSIX rename `mv` operation. Every change is tracked in the Git ledger so the full history is preserved.
 
-Enjoy the demo! 🚀
+![gitcmdb-05.png](docs/images/gitcmdb-05.png)
 
+### 6. System Limits and Scale Benchmarking
+To conclude, we will test the engine's limits by scaling our file footprint to 1,000 data blocks, running latency metrics, and exporting a summary document. This demonstrates the performance capability across thousands of mock JSON records.
+
+![gitcmdb-06.png](docs/images/gitcmdb-06.png)
